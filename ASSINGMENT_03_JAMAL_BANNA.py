@@ -38,9 +38,9 @@ def secondChoice():
 #postcondition: if file already exists overwrites existing data with new dictionary in json format else creates new file and writes dictionary 
 def exportToJSONFile(dictionary, fileName):
     file = open(fileName, "w") #opens the file in write mode, if file doesn't exist creates new one
-    file.write(dictionary) #overwrites existing data if there is any
+    file.write("[" + dictionary + "]") #overwrites existing data if there is any
     file.close()
-
+    
 def thirdChoice():
     fileName = input("input file name (example.txt): ")
     importFromJSONFile(fileName)
