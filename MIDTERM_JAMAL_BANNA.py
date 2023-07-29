@@ -16,15 +16,17 @@ def readFromFileAndClean(fileName):
     for i in range(len(ticketsList)):
         currTicketToList = ticketsList[i].split(", ")
         ticketsListNested.append(currTicketToList)
-    #     currTicketDate = currTicketToList[3]
-    #     if currTicketDate >= getDate():
-    #         if activeDatesDictionary.get(currTicketDate) == None:
-    #             activeDatesDictionary[currTicketDate] = {}
-    #         currTicketEvent = currTicketToList[1]
-    #         if(activeDatesDictionary[currTicketDate].get(currTicketEvent) == None):
-    #             activeDatesDictionary[currTicketDate][currTicketEvent] = []
-    #         activeDatesDictionary[currTicketDate][currTicketEvent].append(currTicketToList)
-    # print(activeDatesDictionary)
+        currTicketDate = currTicketToList[3]
+        if currTicketDate >= getDate():
+            if activeDatesDictionary.get(currTicketDate) == None:
+                activeDatesDictionary[currTicketDate] = {}
+            currTicketEvent = currTicketToList[1]
+            if(activeDatesDictionary[currTicketDate].get(currTicketEvent) == None):
+                activeDatesDictionary[currTicketDate][currTicketEvent] = {}
+            currTicketPriority = currTicketToList[4]
+            if((activeDatesDictionary[currTicketDate][currTicketEvent]).get(currTicketPriority) == None):
+                activeDatesDictionary[currTicketDate][currTicketEvent][currTicketPriority] = []
+            activeDatesDictionary[currTicketDate][currTicketEvent][currTicketPriority].append(currTicketToList)
     return ticketsListNested
     
 ticketsList = readFromFileAndClean("tickets.txt")
@@ -94,7 +96,12 @@ def bookATicket(username, eventId, priority,eventDate):
     lastTicketID = int(ticketsList[-1][0].replace("tick",""))
     newTicket = ["tick" + str(lastTicketID + 1), eventId, username, eventDate , str(priority)]
     ticketsList.append(newTicket)
-      
+    if activeDatesDictionary.get(eventId == None):
+        activeDatesDictionary[eventId] = {}
+    if activeDatesDictionary[eventId].get(priority) == None :
+        activeDatesDictionary[eventId][priority] = []
+    activeDatesDictionary[eventId][priority].append(newTicket)
+    
 def appendNewTicket(newTicket):
     content = ""
     for element in newTicket:
@@ -141,13 +148,17 @@ def disableTicket(ticketToChange):
         del ticketsList[index] #https://stackoverflow.com/questions/627435/how-to-remove-an-element-from-a-list-by-index       
 
 def runEvents():
-    ticketsOfToday = activeDatesDictionary[getDate()]
-    sortedTicketsOfToday = sortEvents(ticketsOfToday)
-    print(sortedTicketsOfToday)
+    eventsOfToday = activeDatesDictionary[getDate()].keys()
+    list = []
+    priorityKeys = [] 
+    output = ""
+    for element in eventsOfToday:
+      list.append(activeDatesDictionary[getDate()][element])
+    for element in list:
+        priorityKeys.append(element.keys())
+    for element in priorityKeys:
+        print(activeDatesDictionary[eventsOfToday][])
 
-def sortEvents(ticketsList):
-    print()
-    #merge sort algorithm
 
 def userBookATicket(username, eventId,eventDate):
     lastTicketID = int(ticketsList[-1][0].replace("tick",""))
@@ -165,3 +176,4 @@ def userMenu(username):
             userBookATicket(username, event)
         # userIn bookATicket its always saving by appending so no need to save on exit
 
+runEvents()
