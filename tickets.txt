@@ -1,0 +1,6 @@
+tick101, ev003, fred, 20230802, 0
+tick102, ev002, gio, 20230803, 2
+tick103, ev003, fred, 20230802, 0
+tick104, ev002, gio, 20230803, 2
+tick105, ev002, gio, 20230803, 2
+tick106, even102, jamal, 20230728, 5

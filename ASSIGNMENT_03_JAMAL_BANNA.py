@@ -52,7 +52,9 @@ def importFromJSONFile(fileName):
     file = open(fileName, "r")
     content = file.read() #read file as string
     file.close()
+    
     contentToList = content[1:-1].split('},') #seperate objects 
+    
     cleaned_list = []
     for string in contentToList:
         newString = string.replace(" ","").replace("\n","").replace('"',"") #remove spaces, new lines and extra quotations from objects that were read as strings 
