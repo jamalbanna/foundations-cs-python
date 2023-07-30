@@ -7,7 +7,7 @@ def getDate():
 
 #https://stackoverflow.com/questions/67786912/sorting-a-multidimensional-array-using-merge-sort
 def merge(left, right):
-    
+
     result = []
     i, j = 0, 0
     while (len(result) < len(left) + len(right)):
@@ -30,8 +30,8 @@ def merge(left, right):
                     i+= 1
                 else:
                     result.append(right[j])
-                    j+= 1               
-            
+                    j+= 1 
+
         if i == len(left) or j == len(right):
             result.extend(left[i:] or right[j:])
             break
@@ -66,13 +66,12 @@ def readFromFileAndClean(fileName):
 
 activeTickets = []
 ticketsList = readFromFileAndClean("tickets.txt")
-sortedTicketsList = mergesort(activeTickets)
 
 def logInMenu():
     counter = 0
-    password = "password"
+    user = False
     print("Hello!")
-    while(counter < 5 and password != ""):
+    while(counter < 5 and not(user)):
         username = input("Please enter your username: ")
         password = input("Please enter your password: ")
         if(username == "admin"):
@@ -83,27 +82,28 @@ def logInMenu():
                 print("Inccorect Username or/and Password \nYou have " + str((5 - counter)) + " attempts left")
         else:
             if(password == ""):
+                user = True
                 userMenu(username)
 
 def adminMenu():
     choice = 0
     while(choice != 7):
         print("\n1. Display Statistics\n2. Book a Ticket\n3. Display all Tickets\n4. Change Ticket’s Priority\n5. Disable Ticket\n6. Run Events\n7. Exit")
-        choice = input("Please select from the above choices")
+        choice = input("Please select from the above choices: ")
+        print()
         if(choice == "1"):
             displayStatistics()
         elif(choice == "2"):
             userName = input("enter username you want to book ticket for: ")
             event = input("enter event you want to book ticket for: ")
-            priority = input("enter priority of the ticket")
-            eventDate = input("enter event date")
+            priority = input("enter priority of the ticket: ")
+            eventDate = input("enter event date in the following format YYYYMMDD: ")
             bookATicket(userName, event, priority, eventDate)
         elif(choice == "3"):
             displayAllTickets()
         elif(choice == "4"):
             ticket = input("enter the tickeID that you want to change priority of: ")
-            priority = input("enter the new priority of the ticket")
-            changeTicketsPriority(ticket, priority)
+            changeTicketsPriority(ticket)
         elif(choice == "5"):
             ticket = input("enter the tickeID that you want to change priority of: ")
             disableTicket(ticket)
@@ -113,16 +113,17 @@ def adminMenu():
             save = input("do you want to save? enter 'y' to save")
             if(save == "y"):
                 writeNewTickets()
- 
+
 def userMenu(username):
     choice = 0
-    while(choice != 2):
+    while(choice != "2"):
         print("1. Book a Ticket\n2.Exit ")
-        choice = input("Please select from the above choices")
         if(choice == "1"):
-            event = input("Please enter event id")
-            userBookATicket(username, event)
+            event = input("Please enter event id: ")
+            date = input("Please enter event date in the following format YYYYMMDD: ")
+            userBookATicket(username, event, date)
         # userIn bookATicket its always saving by appending so no need to save on exit
+        choice = input("Please select from the above choices: ")
          
 def displayStatistics():
     eventCount = {}
@@ -137,12 +138,13 @@ def displayStatistics():
             if(ticketCount + 1 > max):
                 max = ticketCount + 1
                 maxEvent = ticket[1] 
-    print("event with max tickets is: " + maxEvent)
+    print("Event with max tickets is: " + maxEvent)
 
 def bookATicket(username, eventId, priority,eventDate):
     lastTicketID = int(ticketsList[-1][0].replace("tick",""))
     newTicket = ["tick" + str(lastTicketID + 1), eventId, username, eventDate , str(priority)]
     ticketsList.append(newTicket)
+    activeTickets.append(newTicket)
     
 def writeNewTickets():
     content = ""
@@ -156,15 +158,19 @@ def writeNewTickets():
     file.close()
 
 def displayAllTickets():
+    sortedTicketsList = mergesort(activeTickets)
     for ticket in sortedTicketsList:
         print(ticket[0], ticket[1], ticket[2], ticket[3], ticket[4])
    
-def changeTicketsPriority(ticketToChange, newPriority):
+def changeTicketsPriority(ticketToChange):
     index = findTicketIndex(ticketToChange)
+    index2 = findActiveTicketIndex(ticketToChange)
     if(index == -1):
         print("ticket not found")
     else:
+        newPriority = input("enter the new priority of the ticket: ")
         ticketsList[index][4] = newPriority
+        activeTickets[index2][4] = newPriority
 
 def findTicketIndex(ticketToFind):
     for i in range(len(ticketsList)):
@@ -172,13 +178,21 @@ def findTicketIndex(ticketToFind):
             return i
     return -1
 
+def findActiveTicketIndex(ticketToFind):
+    for i in range(len(activeTickets)):
+        if(activeTickets[i][0] == ticketToFind):
+            return i
+    return -1
+
 def disableTicket(ticketToChange):
     index = findTicketIndex(ticketToChange)
+    index2 = findActiveTicketIndex(ticketToChange)
     if(index == -1):
         print("ticket not found")
     else:
         del ticketsList[index] #https://stackoverflow.com/questions/627435/how-to-remove-an-element-from-a-list-by-index       
-    
+        del activeTickets[index2]
+
 def runEvents():
     lastIndex = 0
     today = getDate()
@@ -190,16 +204,17 @@ def runEvents():
         print(ticket[0], ticket[1], ticket[2], ticket[3], ticket[4])
     sortedTicketsList = sortedTicketsList[lastIndex:]
 
-def userBookATicket(username, eventId,eventDate):
+def userBookATicket(username, eventId, eventDate):
     lastTicketID = int(ticketsList[-1][0].replace("tick",""))
     newTicket = ["tick" + str(lastTicketID + 1), eventId, username, eventDate , 0]
     ticketsList.append(newTicket)
+    print("Successfully booked!")
     appendNewTicket(newTicket)
 
 def appendNewTicket(newTicket):
     content = ""
     for element in newTicket:
-        content += element + ", "
+        content += str(element) + ", "
     content = content[:-2] + "\n"
     file = open("tickets.txt", "a")
     file.write(content)
