@@ -1,11 +1,52 @@
 from datetime import date
 
-activeDatesDictionary = {}
-
 def getDate():
     today = str(date.today()) #https://www.geeksforgeeks.org/get-current-date-using-python/
     today = today.replace("-","")
     return today
+
+#https://stackoverflow.com/questions/67786912/sorting-a-multidimensional-array-using-merge-sort
+def merge(left, right):
+    
+    result = []
+    i, j = 0, 0
+    while (len(result) < len(left) + len(right)):
+        if left[i][3] < right[j][3]:
+            result.append(left[i])
+            i+= 1
+        elif left[i][3] > right[j][3]:
+            result.append(right[j])
+            j+= 1
+        else:
+            if left[i][1] < right[j][1]:
+                result.append(left[i])
+                i+= 1
+            elif left[i][1] > right[j][1]:
+                result.append(right[j])
+                j+= 1
+            else:
+                if left[i][4] > right[j][4]:
+                    result.append(left[i])
+                    i+= 1
+                else:
+                    result.append(right[j])
+                    j+= 1               
+            
+        if i == len(left) or j == len(right):
+            result.extend(left[i:] or right[j:])
+            break
+
+    return result
+
+def mergesort(list):
+    if len(list) < 2:
+        return list
+    
+    middle = len(list)//2
+    left = mergesort(list[:middle])
+    right = mergesort(list[middle:])
+
+    return merge(left, right)
 
 def readFromFileAndClean(fileName):
     file = open(fileName, "r")
@@ -13,23 +54,19 @@ def readFromFileAndClean(fileName):
     file.close()
     ticketsList = content.split("\n")[:-1]
     ticketsListNested = []
+    today = getDate()
     for i in range(len(ticketsList)):
         currTicketToList = ticketsList[i].split(", ")
-        ticketsListNested.append(currTicketToList)
         currTicketDate = currTicketToList[3]
-        if currTicketDate >= getDate():
-            if activeDatesDictionary.get(currTicketDate) == None:
-                activeDatesDictionary[currTicketDate] = {}
-            currTicketEvent = currTicketToList[1]
-            if(activeDatesDictionary[currTicketDate].get(currTicketEvent) == None):
-                activeDatesDictionary[currTicketDate][currTicketEvent] = {}
-            currTicketPriority = currTicketToList[4]
-            if((activeDatesDictionary[currTicketDate][currTicketEvent]).get(currTicketPriority) == None):
-                activeDatesDictionary[currTicketDate][currTicketEvent][currTicketPriority] = []
-            activeDatesDictionary[currTicketDate][currTicketEvent][currTicketPriority].append(currTicketToList)
+        today = getDate()
+        ticketsListNested.append(currTicketToList)
+        if currTicketDate >= today:
+            activeTickets.append(currTicketToList)
     return ticketsListNested
-    
+
+activeTickets = []
 ticketsList = readFromFileAndClean("tickets.txt")
+sortedTicketsList = mergesort(activeTickets)
 
 def logInMenu():
     counter = 0
@@ -76,7 +113,17 @@ def adminMenu():
             save = input("do you want to save? enter 'y' to save")
             if(save == "y"):
                 writeNewTickets()
-          
+ 
+def userMenu(username):
+    choice = 0
+    while(choice != 2):
+        print("1. Book a Ticket\n2.Exit ")
+        choice = input("Please select from the above choices")
+        if(choice == "1"):
+            event = input("Please enter event id")
+            userBookATicket(username, event)
+        # userIn bookATicket its always saving by appending so no need to save on exit
+         
 def displayStatistics():
     eventCount = {}
     max = 0
@@ -96,21 +143,7 @@ def bookATicket(username, eventId, priority,eventDate):
     lastTicketID = int(ticketsList[-1][0].replace("tick",""))
     newTicket = ["tick" + str(lastTicketID + 1), eventId, username, eventDate , str(priority)]
     ticketsList.append(newTicket)
-    if activeDatesDictionary.get(eventId == None):
-        activeDatesDictionary[eventId] = {}
-    if activeDatesDictionary[eventId].get(priority) == None :
-        activeDatesDictionary[eventId][priority] = []
-    activeDatesDictionary[eventId][priority].append(newTicket)
     
-def appendNewTicket(newTicket):
-    content = ""
-    for element in newTicket:
-        content += element + ", "
-    content = content[:-2] + "\n"
-    file = open("tickets.txt", "a")
-    file.write(content)
-    file.close()
-
 def writeNewTickets():
     content = ""
     for ticket in ticketsList:
@@ -123,10 +156,9 @@ def writeNewTickets():
     file.close()
 
 def displayAllTickets():
-    for ticket in ticketsList:
-        if(ticket[4] >= getDate()):
-            print("sorting algrithm")
-
+    for ticket in sortedTicketsList:
+        print(ticket[0], ticket[1], ticket[2], ticket[3], ticket[4])
+   
 def changeTicketsPriority(ticketToChange, newPriority):
     index = findTicketIndex(ticketToChange)
     if(index == -1):
@@ -146,19 +178,17 @@ def disableTicket(ticketToChange):
         print("ticket not found")
     else:
         del ticketsList[index] #https://stackoverflow.com/questions/627435/how-to-remove-an-element-from-a-list-by-index       
-
+    
 def runEvents():
-    eventsOfToday = activeDatesDictionary[getDate()].keys()
-    list = []
-    priorityKeys = [] 
-    output = ""
-    for element in eventsOfToday:
-      list.append(activeDatesDictionary[getDate()][element])
-    for element in list:
-        priorityKeys.append(element.keys())
-    for element in priorityKeys:
-        print(activeDatesDictionary[eventsOfToday][])
-
+    lastIndex = 0
+    today = getDate()
+    global sortedTicketsList #https://stackoverflow.com/questions/9970400/resetting-values-in-global-array-within-a-function-python
+    for ticket in sortedTicketsList:
+        lastIndex += 1
+        if(ticket[3] > today):
+            break;
+        print(ticket[0], ticket[1], ticket[2], ticket[3], ticket[4])
+    sortedTicketsList = sortedTicketsList[lastIndex:]
 
 def userBookATicket(username, eventId,eventDate):
     lastTicketID = int(ticketsList[-1][0].replace("tick",""))
@@ -166,14 +196,14 @@ def userBookATicket(username, eventId,eventDate):
     ticketsList.append(newTicket)
     appendNewTicket(newTicket)
 
-def userMenu(username):
-    choice = 0
-    while(choice != 2):
-        print("1. Book a Ticket\n2.Exit ")
-        choice = input("Please select from the above choices")
-        if(choice == "1"):
-            event = input("Please enter event id")
-            userBookATicket(username, event)
-        # userIn bookATicket its always saving by appending so no need to save on exit
+def appendNewTicket(newTicket):
+    content = ""
+    for element in newTicket:
+        content += element + ", "
+    content = content[:-2] + "\n"
+    file = open("tickets.txt", "a")
+    file.write(content)
+    file.close()
 
-runEvents()
+logInMenu()
+
