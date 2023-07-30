@@ -253,5 +253,5 @@ def appendNewTicket(newTicket):
     file.write(content)
     file.close()
 
-displayAllTickets()
+logInMenu()
 
